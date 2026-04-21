@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>多少錢？ — Luxury Price Comparison</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold:       #9a7322;
+      --gold-l:     #7a5a14;
+      --gold-d:     #c8a84a;
+      --bg:         #f7f4ee;
+      --s1:         #f0ece2;
+      --s2:         #e9e3d6;
+      --s3:         #ddd7c8;
+      --border:     #d4cebe;
+      --border-g:   #c0a444;
+      --text:       #1c1912;
+      --muted:      #6e6454;
+      --dim:        #9e9282;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: 'Inter','Noto Sans TC',sans-serif;
+           font-weight: 400; -webkit-font-smoothing: antialiased; min-height: 100vh; }
+    .serif { font-family: 'Cormorant Garamond', serif; }
+
+    /* grain */
+    body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:999; opacity:.04;
+      background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+
+    /* ── header ── */
+    header { border-bottom:1px solid var(--border); padding:0 2.5rem; height:60px;
+      display:flex; align-items:center; justify-content:center;
+      position:sticky; top:0; z-index:50; background:rgba(247,244,238,.94); backdrop-filter:blur(12px); }
+    .logo { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',Arial,sans-serif; font-size:1.1rem; font-weight:700;
+             font-style:normal; letter-spacing:0; color:var(--text); }
+    .hdr-note { font-size:1.1rem; letter-spacing:.05em; color:var(--dim); }
+
+    /* ── hero ── */
+    .hero { padding:5rem 1.5rem 3rem; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; top:-80px; left:50%; transform:translateX(-50%);
+      width:600px; height:400px;
+      background:radial-gradient(ellipse at center,rgba(154,115,34,.06) 0%,transparent 70%);
+      pointer-events:none; }
+    .eyebrow { font-size:.7rem; letter-spacing:.28em; text-transform:uppercase; color:var(--gold-d); margin-bottom:1rem; }
+    .hero-title { font-family:'Noto Sans TC','PingFang TC','PingFang SC','Microsoft JhengHei',sans-serif; font-size:clamp(2rem,5vw,4rem);
+      font-weight:400; line-height:1.15; letter-spacing:-.01em; color:var(--text); margin:0 auto .7rem;
+      width:fit-content; }
+    .hero-title em { font-style:italic; color:var(--gold-l); }
+    .hero-sub { color:var(--muted); font-size:1.05rem; line-height:1.7; margin-bottom:2.6rem;
+      font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; letter-spacing:-.01em; font-weight:700; }
+
+    /* ── brand pills ── */
+    .pills { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-bottom:1.8rem; align-items:flex-start; }
+    .pill-group { display:flex; flex-direction:column; align-items:center; gap:.3rem; }
+    .pill { padding:.42rem 1.1rem; border:1.5px solid rgba(154,115,34,.28); background:transparent;
+      color:var(--muted); font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.9rem;
+      letter-spacing:.08em; cursor:pointer; border-radius:2px;
+      box-shadow:0 0 0 3px rgba(154,115,34,.04);
+      transition:border-color .2s,color .2s,background .2s,box-shadow .2s; }
+    .pill:hover { border-color:var(--gold); color:var(--gold);
+      box-shadow:0 2px 14px rgba(154,115,34,.18), 0 0 0 3px rgba(154,115,34,.08); }
+    .pill.active { border-color:var(--gold); background:rgba(154,115,34,.08); color:var(--gold);
+      box-shadow:0 2px 14px rgba(154,115,34,.18), 0 0 0 3px rgba(154,115,34,.08); }
+    .pill-help { background:transparent; border:none; color:var(--dim); font-size:.58rem;
+      letter-spacing:.12em; text-transform:uppercase; cursor:pointer; padding:.1rem .3rem;
+      transition:color .2s; }
+    .pill-help:hover { color:var(--gold); }
+
+    /* ── search bar ── */
+    .search-wrap { display:flex; max-width:540px; margin:0 auto;
+      border:1.5px solid rgba(154,115,34,.28); background:#fff;
+      transition:border-color .25s, box-shadow .25s;
+      box-shadow:0 2px 10px rgba(28,25,18,.07), 0 0 0 4px rgba(154,115,34,.05); }
+    .search-wrap:focus-within { border-color:var(--gold);
+      box-shadow:0 4px 24px rgba(154,115,34,.18), 0 0 0 4px rgba(154,115,34,.09); }
+    #q { flex:1; background:transparent; border:none; outline:none; color:var(--text);
+      font-family:'Inter','Noto Sans TC',sans-serif; font-weight:400; font-size:.88rem;
+      padding:.9rem 1.3rem; caret-color:var(--gold); }
+    #q::placeholder { color:var(--dim); }
+    #search-btn { padding:.9rem 1.7rem; background:var(--gold); border:none;
+      color:#faf7f0;
+      font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.88rem;
+      font-weight:700; letter-spacing:.14em;
+      cursor:pointer; white-space:nowrap;
+      transition:background .2s, box-shadow .2s, transform .15s; }
+    #search-btn:hover { background:var(--gold-l);
+      box-shadow:-4px 0 20px rgba(154,115,34,.35); transform:translateX(1px); }
+    #search-btn:active { transform:scale(.97); }
+    #search-btn:disabled { opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+
+    /* ── toolbar ── */
+    .toolbar { display:none; padding:.7rem 2.5rem; border-bottom:1px solid var(--border);
+      align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    .toolbar.show { display:flex; }
+    .toolbar-label { font-size:.68rem; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); }
+    .cur-group { display:flex; gap:.4rem; }
+    .cur-btn { padding:.28rem .7rem; border:1px solid var(--border); background:transparent;
+      color:var(--muted); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+      cursor:pointer; border-radius:2px; transition:border-color .2s,color .2s; }
+    .cur-btn:hover { border-color:var(--gold-d); color:var(--gold-l); }
+    .cur-btn.active { border-color:var(--gold); color:var(--gold); }
+
+    /* ── loading ── */
+    #loading { display:none; flex-direction:column; align-items:center; gap:1rem; padding:5rem 1rem; }
+    #loading.show { display:flex; }
+    .spinner { width:32px; height:32px; border:1px solid var(--border); border-top-color:var(--gold);
+      border-radius:50%; animation:spin .8s linear infinite; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .load-text { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1rem; color:var(--muted); letter-spacing:.05em; }
+
+    /* ── error banner ── */
+    #err { display:none; margin:2.5rem auto; max-width:420px; text-align:center; padding:0 1rem; }
+    #err.show { display:block; }
+    #err p { color:var(--muted); font-size:.85rem; line-height:1.7; }
+
+    /* ── results ── */
+    #results { padding:1.5rem 2.5rem 5rem; }
+
+    .brand-block { margin-bottom:3rem; }
+    .brand-header { display:flex; align-items:baseline; gap:.8rem; margin-bottom:1.5rem;
+      padding-bottom:.8rem; border-bottom:1px solid var(--border); }
+    .brand-name { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.45rem; letter-spacing:.06em; }
+    .brand-query { font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-d); }
+    .brand-count { margin-left:auto; font-size:.7rem; color:var(--dim); }
+
+    /* ── 3-column country grid ── */
+    .country-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1.2rem; margin-bottom:1.8rem; }
+    .country-col { background:#fff; border:1px solid var(--border); display:flex; flex-direction:column;
+      box-shadow:0 1px 6px rgba(28,25,18,.05); }
+    .country-col.best-col { border-color:var(--gold); box-shadow:0 2px 14px rgba(154,115,34,.12); }
+    .country-head.best-col-head { background:rgba(154,115,34,.06); border-bottom-color:var(--gold); }
+    .country-head { padding:.7rem 1rem; border-bottom:1px solid var(--border);
+      display:flex; align-items:center; justify-content:space-between; flex-shrink:0; }
+    .country-name { font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
+    .country-cur  { font-size:.62rem; letter-spacing:.1em; color:var(--dim); }
+
+    /* products */
+    .prod-card { padding:.85rem 1rem; border-bottom:1px solid var(--border);
+      display:flex; gap:.8rem; transition:background .15s; }
+    .prod-card:hover { background:var(--s2); }
+    .prod-card:last-of-type { border-bottom:none; }
+    .prod-thumb { width:56px; height:56px; object-fit:cover; flex-shrink:0;
+      border:1px solid var(--border); background:var(--s3); }
+    .prod-thumb-ph { width:56px; height:56px; flex-shrink:0; border:1px solid var(--border);
+      background:var(--s3); display:flex; align-items:center; justify-content:center;
+      color:var(--dim); font-size:.55rem; letter-spacing:.08em; }
+    .prod-info { flex:1; min-width:0; }
+    .prod-name { font-size:.77rem; line-height:1.4; color:var(--text); margin-bottom:.3rem;
+      display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+    .prod-price { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.05rem; font-weight:500; color:var(--gold); }
+    .prod-usd { font-size:.68rem; color:var(--dim); margin-top:.1rem; }
+    .prod-link { display:inline-block; margin-top:.3rem; font-size:.62rem; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--dim); text-decoration:none; transition:color .15s; }
+    .prod-link:hover { color:var(--gold-l); }
+    .best-badge { display:inline-block; margin-top:.3rem; padding:.18rem .5rem;
+      background:rgba(154,115,34,.08); border:1px solid var(--gold-d);
+      font-size:.58rem; letter-spacing:.14em; text-transform:uppercase; color:var(--gold); }
+    .manual-badge { display:inline-block; margin-top:.3rem; padding:.18rem .5rem;
+      background:var(--s2); border:1px solid var(--border);
+      font-size:.58rem; letter-spacing:.1em; text-transform:uppercase; color:var(--dim); }
+    .del-btn { margin-left:auto; padding:.2rem .4rem; background:transparent; border:none;
+      color:var(--dim); cursor:pointer; font-size:.75rem; opacity:.5; transition:opacity .15s; }
+    .del-btn:hover { opacity:1; color:#c05a5a; }
+
+    /* unavailable / empty states */
+    .col-unavail { padding:1.2rem 1rem; text-align:center; }
+    .unavail-icon { font-size:1.2rem; margin-bottom:.5rem; opacity:.4; }
+    .unavail-msg { font-size:.75rem; color:var(--dim); line-height:1.6; margin-bottom:.8rem; }
+    .store-link { display:inline-block; padding:.38rem .9rem; border:1px solid var(--border);
+      color:var(--muted); font-size:.68rem; letter-spacing:.1em; text-transform:uppercase;
+      text-decoration:none; transition:border-color .2s,color .2s; }
+    .store-link:hover { border-color:var(--gold-d); color:var(--gold-l); }
+
+    /* add-price button */
+    .add-price-btn { margin:.8rem 1rem; padding:.55rem .9rem; border:1px dashed var(--border);
+      background:transparent; color:var(--dim); font-size:.72rem; letter-spacing:.1em;
+      text-transform:uppercase; cursor:pointer; width:calc(100% - 2rem);
+      transition:border-color .2s,color .2s; }
+    .add-price-btn:hover { border-color:var(--gold-d); color:var(--gold-l); }
+
+    /* ── comparison table ── */
+    .tbl-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+    .cmp-table { width:100%; border-collapse:collapse; font-size:.8rem;
+      border:1px solid var(--border); }
+    .cmp-table th { padding:.6rem 1rem; font-weight:400; font-size:.65rem;
+      letter-spacing:.14em; text-transform:uppercase; color:var(--muted);
+      border-bottom:1px solid var(--border); text-align:left; background:var(--s1); white-space:nowrap; }
+    .cmp-table th.th-best { background:rgba(154,115,34,.06); color:var(--gold);
+      border-bottom:2px solid var(--gold); }
+    .cmp-table th.th-best .best-badge { vertical-align:middle; }
+    .th-product { min-width:200px; }
+    .cmp-table td { padding:.75rem 1rem; border-bottom:1px solid var(--border);
+      color:var(--text); vertical-align:top; }
+    .cmp-table tr:last-child td { border-bottom:none; }
+    .cmp-table tr:hover td { background:var(--s2); }
+    .td-product-inner { display:flex; align-items:flex-start; gap:.7rem; }
+    .price-cell { color:var(--muted); height:100%; }
+    .price-main { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif;
+      font-size:.95rem; font-weight:500; color:var(--text); line-height:1.3; }
+    .price-cell.best .price-main { color:var(--gold); }
+    .price-usd { font-size:.68rem; color:var(--dim); display:block; margin-top:.15rem; }
+    .price-cell-inner { display:flex; flex-direction:column; height:100%; }
+    .price-cell-inner .prod-link { margin-top:auto; padding-top:.5rem; }
+    .tax-free { font-size:.7rem; color:var(--gold-d); display:block; margin-top:.3rem; }
+    .tax-free-label { font-size:.6rem; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); }
+
+    /* ── modal ── */
+    .modal-overlay { display:none; position:fixed; inset:0; background:rgba(20,18,12,.55);
+      z-index:200; align-items:center; justify-content:center; padding:1rem; }
+    .modal-overlay.open { display:flex; }
+    .modal-box { background:#fff; border:1px solid var(--border);
+      padding:2rem; max-width:420px; width:100%;
+      box-shadow:0 8px 40px rgba(20,18,12,.18); }
+    .modal-title { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.2rem;
+      letter-spacing:.04em; margin-bottom:1.5rem; color:var(--text); }
+    .modal-title span { color:var(--gold); }
+    .form-group { margin-bottom:1rem; }
+    .form-label { display:block; font-size:.65rem; letter-spacing:.14em; text-transform:uppercase;
+      color:var(--muted); margin-bottom:.45rem; }
+    .form-input { width:100%; background:var(--s1); border:1px solid var(--border); color:var(--text);
+      font-family:'Inter',sans-serif; font-size:.85rem; font-weight:400;
+      padding:.65rem .9rem; outline:none; transition:border-color .2s; caret-color:var(--gold); }
+    .form-input:focus { border-color:var(--gold); }
+    .form-row { display:flex; gap:.6rem; }
+    .form-row .form-group { flex:1; }
+    .modal-actions { display:flex; gap:.6rem; margin-top:1.5rem; justify-content:flex-end; }
+    .btn-cancel { padding:.6rem 1.2rem; border:1px solid var(--border); background:transparent;
+      color:var(--muted); font-size:.8rem; letter-spacing:.08em; cursor:pointer; transition:color .2s; }
+    .btn-cancel:hover { color:var(--text); }
+    .btn-save { padding:.6rem 1.4rem; border:1px solid var(--gold); background:rgba(154,115,34,.07);
+      color:var(--gold); font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.9rem;
+      letter-spacing:.08em; cursor:pointer; transition:background .2s,color .2s; }
+    .btn-save:hover { background:rgba(154,115,34,.14); color:var(--gold-l); }
+
+    /* ── help modal ── */
+    .help-img-wrap { position:relative; width:100%; margin-bottom:1rem; border:1px solid var(--border); background:var(--s1); overflow:hidden; }
+    .help-img-wrap img { width:100%; display:block; }
+    .help-hint { font-size:.82rem; color:var(--muted); line-height:1.75; margin-bottom:1.5rem; }
+    .help-tag { display:inline-block; padding:.2rem .55rem; background:rgba(154,115,34,.08);
+      border:1px solid var(--gold-d); font-size:.62rem; letter-spacing:.1em;
+      text-transform:uppercase; color:var(--gold); margin-bottom:.75rem; }
+
+    footer { border-top:1px solid var(--border); padding:1.8rem 2.5rem;
+      display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap; }
+    footer p { font-size:.68rem; color:var(--dim); letter-spacing:.05em; }
+
+    @media (max-width:768px) {
+      header, #results, .toolbar { padding-left:1rem; padding-right:1rem; }
+      .country-grid { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</div>
+</header>
+
+<!-- ── Hero / Search ── -->
+<section class="hero">
+  <h1 class="hero-title">免稅，不是免費</h1>
+  <p class="hero-sub">Tax Free, Not FREE</p>
+
+  <div class="pills" id="pills">
+    <div class="pill-group">
+      <button class="pill active" data-brand="bottega">Bottega Veneta</button>
+      <button class="pill-help" onclick="showHelp('bottega')">🔍 查詢產品編號</button>
+    </div>
+    <div class="pill-group">
+      <button class="pill" data-brand="celine">Celine</button>
+      <button class="pill-help" onclick="showHelp('celine')">🔍 查詢產品編號</button>
+    </div>
+    <div class="pill-group">
+      <button class="pill" data-brand="lv">Louis Vuitton</button>
+      <button class="pill-help" onclick="showHelp('lv')">🔍 查詢產品編號</button>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input id="q" type="text"
+           placeholder="輸入產品編號 / 商品編號"
+           autocomplete="off" spellcheck="false">
+    <button id="search-btn" onclick="handleSearch()">跨境查價 →</button>
+  </div>
+</section>
+
+<!-- ── Toolbar ── -->
+<div class="toolbar" id="toolbar">
+  <p class="toolbar-label">貨幣換算</p>
+  <div class="cur-group">
+    <button class="cur-btn active" data-cur="TWD" onclick="setCurrency('TWD',this)">TWD</button>
+    <button class="cur-btn" data-cur="JPY" onclick="setCurrency('JPY',this)">JPY</button>
+    <button class="cur-btn" data-cur="KRW" onclick="setCurrency('KRW',this)">KRW</button>
+    <button class="cur-btn" data-cur="USD" onclick="setCurrency('USD',this)">USD</button>
+  </div>
+</div>
+
+<!-- ── Loading ── -->
+<div id="loading">
+  <div class="spinner"></div>
+  <p class="load-text">Searching brand websites…</p>
+</div>
+
+<!-- ── Error ── -->
+<div id="err"><p id="err-text"></p></div>
+
+<!-- ── Results ── -->
+<section id="results"></section>
+
+<!-- ── Footer ── -->
+<footer>
+  <p>Prices are user-recorded · Scraped results when available · Rates via <em style="color:var(--gold-d)">ExchangeRate-API</em></p>
+  <p>For personal reference only. Always verify on the official brand website.</p>
+</footer>
+
+<!-- ── Add-Price Modal ── -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <p class="modal-title">Add Price — <span id="modal-ctx"></span></p>
+
+    <div class="form-group">
+      <label class="form-label" for="m-product">Product name</label>
+      <input class="form-input" id="m-product" placeholder="e.g. Classic Flap Medium Black" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="m-price">Price</label>
+        <input class="form-input" id="m-price" type="number" placeholder="e.g. 420000">
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="m-currency">Currency</label>
+        <input class="form-input" id="m-currency" maxlength="3" placeholder="TWD" style="text-transform:uppercase">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save"   onclick="savePrice()">Save Price</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── Help Modal ── -->
+<div class="modal-overlay" id="help-modal" onclick="if(event.target===this)closeHelp()">
+  <div class="modal-box" style="max-width:660px;width:100%">
+    <p class="modal-title" id="help-brand-title"></p>
+    <span class="help-tag" id="help-tag"></span>
+    <div class="help-img-wrap" id="help-img-wrap"></div>
+    <p class="help-hint" id="help-hint"></p>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeHelp()">關閉</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── State ───────────────────────────────────────────────────────────────────
+let activeBrand      = 'bottega';
+let displayCurrency  = 'TWD';
+let exchangeRates    = null;
+let lastSearchData   = null;
+let savedPrices      = [];
+let modal_brand      = '';
+let modal_country    = '';
+let modal_query      = '';
+let modal_currency   = '';
+
+const BRAND_LABELS = { lv:'Louis Vuitton', bottega:'Bottega Veneta', celine:'Celine' };
+const COUNTRY_FLAGS = { TW:'🇹🇼', JP:'🇯🇵', KR:'🇰🇷' };
+const COUNTRY_NAMES = { TW:'Taiwan', JP:'Japan', KR:'Korea' };
+const COUNTRIES     = ['TW','JP','KR'];
+
+// ─── Brand help data ─────────────────────────────────────────────────────────
+const BRAND_HELP = {
+  lv: {
+    title: 'Louis Vuitton — 商品編號在哪裡？',
+    tag: '格式：M13559（1 個英文字母 ＋ 5 位數字）',
+    hint: '進入 Louis Vuitton 商品頁面，商品名稱上方即可看到商品編號，格式通常為一個大寫英文字母加五個數字，例如：M13559。',
+    img: 'brand_assets/help_lv.png',
+  },
+  bottega: {
+    title: 'Bottega Veneta — 商品編號在哪裡？',
+    tag: '格式：786008VCPP12264',
+    hint: '進入 Bottega Veneta 商品頁面，點擊下方「Product details」展開詳細資訊，最後一行即可找到「Product code」（產品編號），例如：786008VCPP12264；亦可直接輸入商品名稱搜尋，例如：Andiamo、Jodie。',
+    img: 'brand_assets/help_bv.png',
+  },
+  celine: {
+    title: 'Celine — 商品編號在哪裡？',
+    tag: '格式：4M0963D39.GJQ4',
+    hint: '進入 Celine 商品頁面，點擊右側「詳述」區塊展開，在最下方即可找到「參考編號」，例如：4M0963D39.GJQ4；亦可直接輸入商品名稱搜尋，例如：Triomphe、Classique。',
+    img: 'brand_assets/help_celine.png',
+  },
+};
+
+function showHelp(brand) {
+  const h = BRAND_HELP[brand];
+  if (!h) return;
+  document.getElementById('help-brand-title').textContent = h.title;
+  document.getElementById('help-tag').textContent = h.tag;
+  document.getElementById('help-hint').textContent = h.hint;
+  const wrap = document.getElementById('help-img-wrap');
+  wrap.innerHTML = '<img src="" alt="" loading="lazy" style="width:100%;display:block">';
+  const img = wrap.querySelector('img');
+  img.alt = h.title;
+  img.onerror = function() {
+    wrap.innerHTML = '<p style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase">截圖待補充</p>';
+  };
+  img.src = h.img;
+  document.getElementById('help-modal').classList.add('open');
+}
+
+function closeHelp() {
+  document.getElementById('help-modal').classList.remove('open');
+}
+
+// ─── Init ────────────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  loadRates();
+  document.getElementById('pills').addEventListener('click', e => {
+    const b = e.target.closest('.pill');
+    if (!b) return;
+    document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+    b.classList.add('active');
+    activeBrand = b.dataset.brand;
+  });
+  document.getElementById('q').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSearch();
+  });
+});
+
+async function loadRates() {
+  try {
+    const r = await fetch('/api/rates');
+    const d = await r.json();
+    if (d.rates) exchangeRates = d.rates;
+  } catch(_) {}
+}
+
+// ─── Search ──────────────────────────────────────────────────────────────────
+async function handleSearch() {
+  const query = document.getElementById('q').value.trim();
+  if (!query) { document.getElementById('q').focus(); return; }
+
+  setLoading(true);
+  clearResults();
+
+  // Run scrape + manual price fetch in parallel
+  const [scrapeResult, manualPrices] = await Promise.allSettled([
+    fetch('/api/search', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ brand: activeBrand, query }),
+    }).then(r => r.json()),
+
+    fetch(`/api/prices?brand=${activeBrand !== 'all' ? activeBrand : ''}&query=${encodeURIComponent(query)}`)
+      .then(r => r.json()),
+  ]);
+
+  const scrapeData  = scrapeResult.status  === 'fulfilled' ? scrapeResult.value  : null;
+  savedPrices       = manualPrices.status  === 'fulfilled' ? manualPrices.value  : [];
+
+  if (scrapeData?.error && !savedPrices.length) {
+    showError(`Could not reach brand websites. Add prices manually using the buttons below, or try again later.`);
+  }
+
+  lastSearchData = scrapeData;
+  renderAll(scrapeData, query);
+  setLoading(false);
+}
+
+// ─── Currency ────────────────────────────────────────────────────────────────
+function setCurrency(cur, btn) {
+  displayCurrency = cur;
+  document.querySelectorAll('.cur-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  if (lastSearchData) renderAll(lastSearchData, document.getElementById('q').value.trim());
+}
+
+function toUSD(price, from) {
+  if (!exchangeRates || !price) return null;
+  return { TWD: price / exchangeRates.TWD, JPY: price / exchangeRates.JPY,
+           KRW: price / exchangeRates.KRW, USD: price }[from] ?? null;
+}
+
+function toDisplay(price, from) {
+  const usd = toUSD(price, from);
+  if (usd == null) return null;
+  const sym = { TWD:'NT$', JPY:'¥', KRW:'₩', USD:'$' };
+  const rate = { TWD: exchangeRates?.TWD, JPY: exchangeRates?.JPY, KRW: exchangeRates?.KRW, USD: 1 };
+  const val = usd * (rate[displayCurrency] || 1);
+  return (sym[displayCurrency] || '') + Math.round(val).toLocaleString();
+}
+
+// ─── Rendering ───────────────────────────────────────────────────────────────
+function renderAll(scrapeData, query) {
+  document.getElementById('toolbar').classList.add('show');
+  const container = document.getElementById('results');
+  container.innerHTML = '';
+
+  if (!scrapeData) {
+    // Only manual prices
+    renderBrandBlock(container, activeBrand !== 'all' ? activeBrand : 'lv', null, query);
+    return;
+  }
+
+  if (scrapeData.brand !== undefined) {
+    // Single brand result
+    renderBrandBlock(container, scrapeData.brand, scrapeData, query);
+  } else {
+    // 'all' mode
+    for (const [brand, data] of Object.entries(scrapeData)) {
+      renderBrandBlock(container, brand, data, query);
+    }
+  }
+}
+
+function renderBrandBlock(container, brand, scrapeData, query) {
+  const div = document.createElement('div');
+  div.className = 'brand-block';
+
+  const byCountry = {};
+  for (const c of COUNTRIES) byCountry[c] = scrapeData?.[c]?.products || [];
+
+  const scraped = COUNTRIES.reduce((n,c) => n + byCountry[c].length, 0);
+  const total   = scraped;
+
+  let html = `
+    <div class="brand-header">
+      <span class="brand-name">${BRAND_LABELS[brand] || brand.toUpperCase()}</span>
+      <span class="brand-query">${esc(query)}</span>
+      <span class="brand-count">${total} result${total!==1?'s':''}</span>
+    </div>`;
+
+  // Min USD per country for column-header best badge
+  const countryMinUSD = {};
+  for (const c of COUNTRIES) {
+    const vals = byCountry[c].map(p => toUSD(p.price, p.currency)).filter(Boolean);
+    if (vals.length) countryMinUSD[c] = Math.min(...vals);
+  }
+  const globalMinUSD = Object.values(countryMinUSD).length ? Math.min(...Object.values(countryMinUSD)) : null;
+
+  const maxLen = Math.max(...COUNTRIES.map(c => byCountry[c].length), 0);
+
+  if (maxLen > 0) {
+    html += `<div class="tbl-wrap"><table class="cmp-table"><thead><tr>
+      <th class="th-product">Product</th>`;
+
+    for (const c of COUNTRIES) {
+      const isBest = globalMinUSD && countryMinUSD[c] && Math.abs(countryMinUSD[c] - globalMinUSD) < 1;
+      html += `<th class="${isBest ? 'th-best' : ''}">${COUNTRY_FLAGS[c]}&nbsp;${COUNTRY_NAMES[c]}${isBest ? '&ensp;<span class="best-badge" style="margin:0">最划！</span>' : ''}</th>`;
+    }
+
+    html += `</tr></thead><tbody>`;
+
+    for (let i = 0; i < maxLen; i++) {
+      const refProd = byCountry['TW'][i] || byCountry['JP'][i] || byCountry['KR'][i];
+      if (!refProd) continue;
+
+      const rowUSD = COUNTRIES.map(c => byCountry[c][i] ? toUSD(byCountry[c][i].price, byCountry[c][i].currency) : null).filter(Boolean);
+      const minRowUSD = rowUSD.length ? Math.min(...rowUSD) : null;
+
+      html += `<tr>
+        <td class="td-product">
+          <div class="td-product-inner">
+            ${refProd.image
+              ? `<img class="prod-thumb" src="${esc(refProd.image)}" loading="lazy" onerror="this.style.display='none'">`
+              : `<div class="prod-thumb-ph">IMG</div>`}
+            <span class="prod-name">${esc(refProd.name)}</span>
+          </div>
+        </td>`;
+
+      for (const c of COUNTRIES) {
+        const p = byCountry[c][i];
+        if (!p) { html += `<td class="price-cell"><span style="color:var(--dim)">—</span></td>`; continue; }
+        const usd    = toUSD(p.price, p.currency);
+        const isBest = minRowUSD && usd && Math.abs(usd - minRowUSD) < 1;
+        const disp   = toDisplay(p.price, p.currency);
+        const TAX = { JP: 0.10, KR: 0.10 };
+        const taxRate = TAX[c];
+        const tfHtml = taxRate ? (() => {
+          const tfPrice = Math.round(p.price / (1 + taxRate));
+          const sym = { TWD:'NT$', JPY:'¥', KRW:'₩', USD:'$' }[p.currency] || '';
+          const tfFmt = sym + tfPrice.toLocaleString();
+          const tfDisp = toDisplay(tfPrice, p.currency);
+          const tfConv = tfDisp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ ${tfDisp} ${displayCurrency}</span>` : '';
+          return `<span class="tax-free"><span class="tax-free-label">未稅價</span> ${tfFmt}${tfConv}</span>`;
+        })() : '';
+        const dispInline = disp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ ${disp} ${displayCurrency}</span>` : '';
+        html += `<td class="price-cell${isBest ? ' best' : ''}">
+          <div class="price-cell-inner">
+            <div class="price-main">${esc(p.formattedPrice)}${dispInline}</div>
+            ${tfHtml}
+            ${p.url ? `<a class="prod-link" href="${esc(p.url)}" target="_blank" rel="noopener">查看頁面 ↗</a>` : ''}
+          </div>
+        </td>`;
+      }
+      html += `</tr>`;
+    }
+
+    html += `</tbody></table></div>`;
+  } else {
+    html += `<div class="col-unavail">
+      <div class="unavail-icon">◌</div>
+      <div class="unavail-msg">No results found. Visit official stores to check prices.</div>
+      <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem">
+        ${COUNTRIES.map(c => {
+          const url = scrapeData?.[c]?.searchUrl || scrapeData?.[c]?.storeUrl;
+          return url ? `<a class="store-link" href="${esc(url)}" target="_blank" rel="noopener">${COUNTRY_NAMES[c]} ↗</a>` : '';
+        }).join('')}
+      </div>
+    </div>`;
+  }
+
+  div.innerHTML = html;
+  container.appendChild(div);
+}
+
+function buildCompTable(allPrices) {
+  // Use the country with most results as reference
+  const ref = COUNTRIES.reduce((a,b) => (allPrices[a]?.length||0) >= (allPrices[b]?.length||0) ? a : b);
+  const rows = [];
+
+  for (const p of (allPrices[ref] || []).slice(0,8)) {
+    const row = { name: p.name, prices: {} };
+    for (const c of COUNTRIES) {
+      const match = (allPrices[c] || []).find(q => {
+        const sim = lcs(q.name.toLowerCase(), p.name.toLowerCase());
+        return sim > Math.min(q.name.length, p.name.length) * 0.4;
+      }) || (c === ref ? p : null);
+      if (match) row.prices[c] = { fmt: match.formattedPrice, price: match.price, cur: match.currency };
+    }
+    if (Object.keys(row.prices).length >= 2) rows.push(row);
+  }
+  if (!rows.length) return '';
+
+  let html = `
+    <div class="cmp-section">
+      <table class="cmp-table">
+        <thead><tr>
+          ${COUNTRIES.map(c=>`<th>${COUNTRY_FLAGS[c]} ${COUNTRY_NAMES[c]}</th>`).join('')}
+        </tr></thead>
+        <tbody>`;
+
+  for (const row of rows) {
+    const usdVals = COUNTRIES.map(c=>row.prices[c]?.price ? toUSD(row.prices[c].price, row.prices[c].cur) : null).filter(Boolean);
+    const minUSD  = usdVals.length ? Math.min(...usdVals) : null;
+    html += `<tr>`;
+    for (const c of COUNTRIES) {
+      const p = row.prices[c];
+      if (!p) { html += `<td class="price-cell" style="color:var(--dim)">—</td>`; continue; }
+      const usd  = toUSD(p.price, p.cur);
+      const best = minUSD && usd && Math.abs(usd - minUSD) < 1;
+      const disp = toDisplay(p.price, p.cur);
+      html += `<td class="price-cell${best?' best':''}">
+        ${esc(p.fmt)}
+        ${disp && displayCurrency !== p.cur ? `<span class="price-usd">≈ ${disp} ${displayCurrency}</span>` : ''}
+        ${best ? ' ✦' : ''}
+      </td>`;
+    }
+    html += `</tr>`;
+  }
+  html += `</tbody></table></div>`;
+  return html;
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+function openModal(brand, country, query, currency) {
+  modal_brand    = brand;
+  modal_country  = country;
+  modal_query    = query;
+  modal_currency = currency;
+  document.getElementById('modal-ctx').textContent =
+    `${BRAND_LABELS[brand]||brand} · ${COUNTRY_NAMES[country]}`;
+  document.getElementById('m-product').value  = '';
+  document.getElementById('m-price').value    = '';
+  document.getElementById('m-currency').value = currency;
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('m-product').focus(), 50);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+async function savePrice() {
+  const product  = document.getElementById('m-product').value.trim();
+  const price    = parseFloat(document.getElementById('m-price').value);
+  const currency = document.getElementById('m-currency').value.trim().toUpperCase();
+
+  if (!product || !price || !currency) {
+    document.getElementById('m-product').style.borderColor = product ? '' : '#c05a5a';
+    document.getElementById('m-price').style.borderColor   = price   ? '' : '#c05a5a';
+    return;
+  }
+
+  try {
+    const r = await fetch('/api/prices', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        brand: modal_brand, country: modal_country, productName: product,
+        price, currency, query: modal_query,
+      }),
+    });
+    const entry = await r.json();
+    savedPrices.push(entry);
+    closeModal();
+    renderAll(lastSearchData, document.getElementById('q').value.trim());
+  } catch(e) {
+    alert('Failed to save: ' + e.message);
+  }
+}
+
+async function deletePrice(id) {
+  await fetch(`/api/prices/${id}`, { method:'DELETE' });
+  savedPrices = savedPrices.filter(p => p.id !== id);
+  const el = document.getElementById(`entry-${id}`);
+  if (el) el.remove();
+}
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function lcs(a, b) {
+  let max = 0;
+  for (let i=0;i<a.length;i++) for (let j=0;j<b.length;j++) {
+    let l=0;
+    while (i+l<a.length && j+l<b.length && a[i+l]===b[j+l]) l++;
+    if (l > max) max = l;
+  }
+  return max;
+}
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function setLoading(on) {
+  document.getElementById('loading').classList.toggle('show', on);
+  document.getElementById('search-btn').disabled = on;
+}
+function clearResults() {
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('toolbar').classList.remove('show');
+  document.getElementById('err').classList.remove('show');
+  lastSearchData = null;
+}
+function showError(msg) {
+  document.getElementById('err-text').textContent = msg;
+  document.getElementById('err').classList.add('show');
+}
+</script>
+</body>
+</html>
