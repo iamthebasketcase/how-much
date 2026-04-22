@@ -28,7 +28,11 @@ try:
 except ImportError:
     _CAMOUFOX = False
 
-from playwright.async_api import async_playwright
+try:
+    from playwright.async_api import async_playwright
+    _PLAYWRIGHT = True
+except ImportError:
+    _PLAYWRIGHT = False
 
 
 # ── SKU detection ──────────────────────────────────────────────────────────────
@@ -562,7 +566,7 @@ async def _search_single(brand, query):
 
     if _CAMOUFOX:
         await run_with_browser(AsyncCamoufox(**launch_kwargs, geoip=False))
-    else:
+    elif _PLAYWRIGHT:
         async with async_playwright() as p:
             browser = await p.chromium.launch(**launch_kwargs)
             try:
