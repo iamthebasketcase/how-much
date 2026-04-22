@@ -66,7 +66,7 @@ def do_search():
         return jsonify({'error': 'brand and query are required'}), 400
     if len(query) > 120:
         return jsonify({'error': 'query too long'}), 400
-    if brand not in {'lv', 'bottega', 'celine', 'all'}:
+    if brand not in {'lv', 'bottega', 'celine', 'uniqlo', 'all'}:
         return jsonify({'error': f'unknown brand: {brand}'}), 400
 
     key = f'{brand}::{query.lower()}'

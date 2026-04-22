@@ -279,6 +279,10 @@
       <button class="pill" data-brand="lv">Louis Vuitton</button>
       <button class="pill-help" onclick="showHelp('lv')">🔍 查詢產品編號</button>
     </div>
+    <div class="pill-group">
+      <button class="pill" data-brand="uniqlo">Uniqlo</button>
+      <button class="pill-help" onclick="showHelp('uniqlo')">🔍 查詢商品名稱</button>
+    </div>
   </div>
 
   <div class="search-wrap">
@@ -370,7 +374,7 @@ let modal_country    = '';
 let modal_query      = '';
 let modal_currency   = '';
 
-const BRAND_LABELS = { lv:'Louis Vuitton', bottega:'Bottega Veneta', celine:'Celine' };
+const BRAND_LABELS = { lv:'Louis Vuitton', bottega:'Bottega Veneta', celine:'Celine', uniqlo:'Uniqlo' };
 const COUNTRY_FLAGS = { TW:'🇹🇼', JP:'🇯🇵', KR:'🇰🇷' };
 const COUNTRY_NAMES = { TW:'Taiwan', JP:'Japan', KR:'Korea' };
 const COUNTRIES     = ['TW','JP','KR'];
@@ -395,6 +399,12 @@ const BRAND_HELP = {
     hint: '進入 Celine 商品頁面，點擊右側「詳述」區塊展開，在最下方即可找到「參考編號」，例如：4M0963D39.GJQ4；亦可直接輸入商品名稱搜尋，例如：Triomphe、Classique。',
     img: 'brand_assets/help_celine.png',
   },
+  uniqlo: {
+    title: 'Uniqlo — 如何搜尋？',
+    tag: '輸入商品名稱，例如：fleece、HEATTECH',
+    hint: '直接輸入商品名稱（中文或英文皆可），例如：刷毛外套、fleece、HEATTECH，即可比較台灣、日本、韓國三地的 Uniqlo 售價。',
+    img: '',
+  },
 };
 
 function showHelp(brand) {
@@ -404,13 +414,17 @@ function showHelp(brand) {
   document.getElementById('help-tag').textContent = h.tag;
   document.getElementById('help-hint').textContent = h.hint;
   const wrap = document.getElementById('help-img-wrap');
-  wrap.innerHTML = '<img src="" alt="" loading="lazy" style="width:100%;display:block">';
-  const img = wrap.querySelector('img');
-  img.alt = h.title;
-  img.onerror = function() {
-    wrap.innerHTML = '<p style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase">截圖待補充</p>';
-  };
-  img.src = h.img;
+  if (!h.img) {
+    wrap.innerHTML = '<p style="min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase">直接輸入商品名稱即可</p>';
+  } else {
+    wrap.innerHTML = '<img src="" alt="" loading="lazy" style="width:100%;display:block">';
+    const img = wrap.querySelector('img');
+    img.alt = h.title;
+    img.onerror = function() {
+      wrap.innerHTML = '<p style="min-height:120px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase">截圖待補充</p>';
+    };
+    img.src = h.img;
+  }
   document.getElementById('help-modal').classList.add('open');
 }
 

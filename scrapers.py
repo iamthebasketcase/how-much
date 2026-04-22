@@ -316,6 +316,94 @@ def fetch_celine_search(query: str) -> dict:
     return results
 
 
+# ── Uniqlo search ─────────────────────────────────────────────────────────────
+
+def fetch_uniqlo_search(query: str) -> dict:
+    results = {}
+
+    # TW — old-style hmall POST API
+    try:
+        resp = cffi_req.post(
+            'https://d.uniqlo.com/tw/p/search/products/by-description',
+            json={'description': query, 'pageInfo': {'page': 1, 'pageSize': 8}},
+            headers={'langCode': 'zh_TW', 'Referer': 'https://www.uniqlo.com/tw/zh_TW/search.html'},
+            impersonate='chrome124',
+            timeout=12,
+        )
+        data = resp.json()
+        products = []
+        if data.get('success') and data.get('resp'):
+            for p in (data['resp'][0].get('productList') or [])[:6]:
+                name = p.get('name') or p.get('shortName', '')
+                price = p.get('minPrice')
+                code = p.get('productCode', '')
+                if name and price:
+                    products.append({
+                        'name': name,
+                        'price': int(price),
+                        'currency': 'TWD',
+                        'formattedPrice': f'NT${int(price):,}',
+                        'url': f'https://www.uniqlo.com/tw/zh_TW/product-detail.html?productCode={code}',
+                        'image': '',
+                        'sku': p.get('code', ''),
+                    })
+        results['TW'] = {
+            'currency': 'TWD', 'products': products,
+            'error': None if products else 'No results',
+            'storeUrl': 'https://www.uniqlo.com/tw/zh_TW/',
+            'searchUrl': f'https://www.uniqlo.com/tw/zh_TW/search.html?description={quote_plus(query)}',
+        }
+    except Exception as exc:
+        results['TW'] = {
+            'currency': 'TWD', 'products': [], 'error': str(exc),
+            'storeUrl': 'https://www.uniqlo.com/tw/zh_TW/',
+            'searchUrl': f'https://www.uniqlo.com/tw/zh_TW/search.html?description={quote_plus(query)}',
+        }
+
+    # JP & KR — Next.js v5 commerce API
+    for country, locale_path, locale_code, currency in [
+        ('JP', 'jp', 'ja', 'JPY'),
+        ('KR', 'kr', 'ko', 'KRW'),
+    ]:
+        store_url  = f'https://www.uniqlo.com/{locale_path}/{locale_code}/'
+        search_url_ = f'https://www.uniqlo.com/{locale_path}/{locale_code}/search?q={quote_plus(query)}'
+        try:
+            resp = cffi_req.get(
+                f'https://www.uniqlo.com/{locale_path}/api/commerce/v5/{locale_code}/products',
+                params={'q': query, 'limit': 8, 'offset': 0, 'httpFailure': 'true'},
+                impersonate='chrome124',
+                timeout=12,
+            )
+            data = resp.json()
+            products = []
+            for item in (data.get('result', {}).get('items') or [])[:6]:
+                name  = item.get('name', '')
+                price = (item.get('prices') or {}).get('base', {}).get('value')
+                pid   = item.get('productId', '')
+                if name and price:
+                    products.append({
+                        'name': name,
+                        'price': int(price),
+                        'currency': currency,
+                        'formattedPrice': f'{"¥" if country == "JP" else "₩"}{int(price):,}',
+                        'url': f'https://www.uniqlo.com/{locale_path}/{locale_code}/products/{pid}',
+                        'image': '',
+                        'sku': pid,
+                    })
+            results[country] = {
+                'currency': currency, 'products': products,
+                'error': None if products else 'No results',
+                'storeUrl': store_url, 'searchUrl': search_url_,
+            }
+        except Exception as exc:
+            results[country] = {
+                'currency': currency, 'products': [], 'error': str(exc),
+                'storeUrl': store_url, 'searchUrl': search_url_,
+            }
+
+    return results
+
+
 COUNTRIES = {
     'TW': {'currency': 'TWD', 'locale': 'zh-TW', 'tz': 'Asia/Taipei'},
     'JP': {'currency': 'JPY', 'locale': 'ja-JP', 'tz': 'Asia/Tokyo'},
@@ -349,6 +437,11 @@ STORE_URLS = {
         'JP': 'https://www.celine.com/ja-jp',
         'KR': 'https://www.celine.com/ko-kr',
     },
+    'uniqlo': {
+        'TW': 'https://www.uniqlo.com/tw/zh_TW/',
+        'JP': 'https://www.uniqlo.com/jp/ja/',
+        'KR': 'https://www.uniqlo.com/kr/ko/',
+    },
 }
 
 def search_url(brand, country, query):
@@ -378,6 +471,11 @@ def search_url(brand, country, query):
             'TW': f'https://www.celine.com/en-tw/search?q={q}',
             'JP': f'https://www.celine.com/ja-jp/search?q={q}',
             'KR': f'https://www.celine.com/ko-kr/search?q={q}',
+        },
+        'uniqlo': {
+            'TW': f'https://www.uniqlo.com/tw/zh_TW/search.html?description={q}',
+            'JP': f'https://www.uniqlo.com/jp/ja/search?q={q}',
+            'KR': f'https://www.uniqlo.com/kr/ko/search?q={q}',
         },
     }
     return patterns.get(brand, {}).get(country)
@@ -526,6 +624,11 @@ async def _search_single(brand, query):
         country_data = fetch_celine_search(query)
         return {'brand': 'celine', 'query': query, **country_data}
 
+    # Fast path: Uniqlo REST APIs (TW POST, JP/KR GET)
+    if brand == 'uniqlo' and _CFFI:
+        country_data = fetch_uniqlo_search(query)
+        return {'brand': 'uniqlo', 'query': query, **country_data}
+
     results = {}
     q = quote_plus(query)
 
@@ -602,7 +705,7 @@ async def _search_single(brand, query):
 async def search_brand(brand, query):
     if brand == 'all':
         all_results = {}
-        for b in ['lv', 'bottega', 'celine']:
+        for b in ['lv', 'bottega', 'celine', 'uniqlo']:
             try:
                 all_results[b] = await _search_single(b, query)
             except Exception as e:
