@@ -12,8 +12,10 @@ from scrapers import search_brand
 app = Flask(__name__)
 
 _scrape_cache = {}
-CACHE_TTL     = 3600
-PRICES_FILE   = 'prices.json'
+CACHE_TTL   = 3600
+_BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
+# On Vercel the filesystem is read-only except /tmp
+PRICES_FILE = '/tmp/prices.json' if os.environ.get('VERCEL') else os.path.join(_BASE_DIR, 'prices.json')
 
 
 # ── Price storage helpers ──────────────────────────────────────────────────────
@@ -33,14 +35,14 @@ def _save_prices(prices):
 
 @app.route('/')
 def index():
-    resp = send_file('index.html')
+    resp = send_file(os.path.join(_BASE_DIR, 'index.html'))
     resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
     return resp
 
 
 @app.route('/brand_assets/<path:filename>')
 def brand_assets(filename):
-    return send_file(f'brand_assets/{filename}')
+    return send_file(os.path.join(_BASE_DIR, 'brand_assets', filename))
 
 
 @app.route('/api/rates')
