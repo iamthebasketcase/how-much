@@ -15,7 +15,8 @@ _scrape_cache = {}
 CACHE_TTL   = 3600
 _BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
 # On Vercel the filesystem is read-only except /tmp
-PRICES_FILE = '/tmp/prices.json' if os.environ.get('VERCEL') else os.path.join(_BASE_DIR, 'prices.json')
+PRICES_FILE     = '/tmp/prices.json'     if os.environ.get('VERCEL') else os.path.join(_BASE_DIR, 'prices.json')
+ANALYTICS_FILE  = '/tmp/analytics.json'  if os.environ.get('VERCEL') else os.path.join(_BASE_DIR, 'analytics.json')
 
 
 # ── Price storage helpers ──────────────────────────────────────────────────────
@@ -29,6 +30,16 @@ def _load_prices():
 def _save_prices(prices):
     with open(PRICES_FILE, 'w', encoding='utf-8') as f:
         json.dump(prices, f, indent=2, ensure_ascii=False)
+
+def _load_analytics():
+    if os.path.exists(ANALYTICS_FILE):
+        with open(ANALYTICS_FILE, 'r', encoding='utf-8') as f:
+            return json.load(f)
+    return []
+
+def _save_analytics(events):
+    with open(ANALYTICS_FILE, 'w', encoding='utf-8') as f:
+        json.dump(events, f, indent=2, ensure_ascii=False)
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -66,7 +77,7 @@ def do_search():
         return jsonify({'error': 'brand and query are required'}), 400
     if len(query) > 120:
         return jsonify({'error': 'query too long'}), 400
-    if brand not in {'lv', 'bottega', 'celine', 'uniqlo', 'all'}:
+    if brand not in {'lv', 'bottega', 'celine', 'uniqlo', 'gu', 'all'}:
         return jsonify({'error': f'unknown brand: {brand}'}), 400
 
     key = f'{brand}::{query.lower()}'
@@ -136,6 +147,38 @@ def delete_price(price_id):
     prices = [p for p in prices if p.get('id') != price_id]
     _save_prices(prices)
     return jsonify({'ok': True})
+
+
+# ── Analytics ─────────────────────────────────────────────────────────────────
+
+@app.route('/api/analytics', methods=['POST'])
+def track_event():
+    body  = request.get_json(silent=True) or {}
+    brand = body.get('brand', '').lower().strip()
+    query = body.get('query', '').strip()
+    if not brand or not query:
+        return jsonify({'ok': False}), 400
+
+    event = {
+        'brand':     brand,
+        'query':     query,
+        'date':      time.strftime('%Y-%m-%d'),
+        'timestamp': int(time.time()),
+    }
+    events = _load_analytics()
+    events.append(event)
+    _save_analytics(events)
+    return jsonify({'ok': True}), 201
+
+
+@app.route('/api/analytics', methods=['GET'])
+def get_analytics():
+    events = _load_analytics()
+    # Aggregate counts per brand
+    counts = {}
+    for e in events:
+        counts[e['brand']] = counts.get(e['brand'], 0) + 1
+    return jsonify({'total': len(events), 'by_brand': counts, 'events': events})
 
 
 if __name__ == '__main__':

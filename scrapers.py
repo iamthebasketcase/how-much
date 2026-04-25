@@ -134,7 +134,7 @@ def fetch_lv_by_sku(sku: str) -> dict:
             else:
                 results[country] = {
                     'currency': currency, 'products': [],
-                    'error': 'Product not found or price unavailable',
+                    'error': '查不到此商品',
                     'storeUrl': store_url, 'searchUrl': None,
                 }
 
@@ -229,7 +229,7 @@ def fetch_bv_search(query: str) -> dict:
             results[country] = {
                 'currency':  products[0]['currency'] if products else default_cur,
                 'products':  products,
-                'error':     None if products else 'Product not found — try searching by name',
+                'error':     None if products else '查不到此商品',
                 'storeUrl':  store_url,
                 'searchUrl': search_url_,
             }
@@ -304,7 +304,7 @@ def fetch_celine_search(query: str) -> dict:
             results[country] = {
                 'currency':  products[0]['currency'] if products else default_cur,
                 'products':  products,
-                'error':     None if products else 'Product not found — try searching by name',
+                'error':     None if products else '查不到此商品',
                 'storeUrl':  store_url,
                 'searchUrl': search_url_,
             }
@@ -337,6 +337,10 @@ def fetch_uniqlo_search(query: str) -> dict:
                 name = p.get('name') or p.get('shortName', '')
                 price = p.get('minPrice')
                 code = p.get('productCode', '')
+                chips = p.get('chipPic', [])
+                color_m = re.search(r'COL(\d+)\.jpg', chips[0]) if chips else None
+                color = color_m.group(1) if color_m else '09'
+                image = f'https://image.uniqlo.com/UQ/ST3/AsianCommon/imagesgoods/{query}/item/goods_{color}_{query}_3x4.jpg'
                 if name and price:
                     products.append({
                         'name': name,
@@ -344,7 +348,7 @@ def fetch_uniqlo_search(query: str) -> dict:
                         'currency': 'TWD',
                         'formattedPrice': f'NT${int(price):,}',
                         'url': f'https://www.uniqlo.com/tw/zh_TW/product-detail.html?productCode={code}',
-                        'image': '',
+                        'image': image,
                         'sku': p.get('code', ''),
                     })
         results['TW'] = {
@@ -380,6 +384,14 @@ def fetch_uniqlo_search(query: str) -> dict:
                 name  = item.get('name', '')
                 price = (item.get('prices') or {}).get('base', {}).get('value')
                 pid   = item.get('productId', '')
+                image = ''
+                main_imgs = (item.get('images') or {}).get('main', {})
+                if isinstance(main_imgs, dict):
+                    first = next(iter(main_imgs.values()), None)
+                    if isinstance(first, dict):
+                        image = first.get('image', '')
+                    elif isinstance(first, str):
+                        image = first
                 if name and price:
                     products.append({
                         'name': name,
@@ -387,7 +399,7 @@ def fetch_uniqlo_search(query: str) -> dict:
                         'currency': currency,
                         'formattedPrice': f'{"¥" if country == "JP" else "₩"}{int(price):,}',
                         'url': f'https://www.uniqlo.com/{locale_path}/{locale_code}/products/{pid}',
-                        'image': '',
+                        'image': image,
                         'sku': pid,
                     })
             results[country] = {
@@ -400,6 +412,112 @@ def fetch_uniqlo_search(query: str) -> dict:
                 'currency': currency, 'products': [], 'error': str(exc),
                 'storeUrl': store_url, 'searchUrl': search_url_,
             }
+
+    return results
+
+
+# ── GU search ─────────────────────────────────────────────────────────────────
+
+def fetch_gu_search(query: str) -> dict:
+    results = {}
+
+    # TW — old-style hmall POST API (same platform as Uniqlo TW)
+    try:
+        resp = cffi_req.post(
+            'https://d.gu-global.com/tw/p/search/products/by-description',
+            json={'description': query, 'pageInfo': {'page': 1, 'pageSize': 8}},
+            headers={'langCode': 'zh_TW', 'Referer': 'https://www.gu-global.com/tw/zh_TW/search.html'},
+            impersonate='chrome124',
+            timeout=12,
+        )
+        data = resp.json()
+        products = []
+        if data.get('success') and data.get('resp'):
+            for p in (data['resp'][0].get('productList') or [])[:6]:
+                name  = p.get('name') or p.get('shortName', '')
+                price = p.get('minPrice') or p.get('originPrice')
+                code  = p.get('productCode', '')
+                chips = p.get('chipPic', [])
+                color_m = re.search(r'(?:COL|GCL)(\d+)\.jpg', chips[0]) if chips else None
+                color = color_m.group(1) if color_m else '01'
+                image = f'https://image.uniqlo.com/GU/ST3/AsianCommon/imagesgoods/{query}/item/goods_{color}_{query}_3x4.jpg'
+                if name and price:
+                    products.append({
+                        'name':           name,
+                        'price':          int(price),
+                        'currency':       'TWD',
+                        'formattedPrice': f'NT${int(price):,}',
+                        'url':            f'https://www.gu-global.com/tw/zh_TW/product-detail.html?productCode={code}',
+                        'image':          image,
+                        'sku':            code,
+                    })
+        results['TW'] = {
+            'currency': 'TWD', 'products': products,
+            'error': None if products else 'No results',
+            'storeUrl': 'https://www.gu-global.com/tw/zh_tw/',
+            'searchUrl': f'https://www.gu-global.com/tw/zh_TW/search.html?description={quote_plus(query)}',
+        }
+    except Exception as exc:
+        results['TW'] = {
+            'currency': 'TWD', 'products': [], 'error': str(exc),
+            'storeUrl': 'https://www.gu-global.com/tw/zh_tw/',
+            'searchUrl': f'https://www.gu-global.com/tw/zh_TW/search.html?description={quote_plus(query)}',
+        }
+
+    # JP — v5 commerce API (same platform as Uniqlo JP)
+    store_url   = 'https://www.gu-global.com/jp/ja/'
+    search_url_ = f'https://www.gu-global.com/jp/ja/search?q={quote_plus(query)}'
+    try:
+        resp = cffi_req.get(
+            'https://www.gu-global.com/jp/api/commerce/v5/ja/products',
+            params={'q': query, 'limit': 8, 'offset': 0, 'httpFailure': 'true'},
+            headers={'Referer': store_url},
+            impersonate='chrome124',
+            timeout=12,
+        )
+        data = resp.json()
+        products = []
+        for item in (data.get('result', {}).get('items') or [])[:6]:
+            name  = item.get('name', '')
+            price = (item.get('prices') or {}).get('base', {}).get('value')
+            pid   = item.get('productId', '')
+            # images.main is a dict keyed by color code; first value has .image
+            image = ''
+            main_imgs = (item.get('images') or {}).get('main', {})
+            if isinstance(main_imgs, dict):
+                first = next(iter(main_imgs.values()), None)
+                if isinstance(first, dict):
+                    image = first.get('image', '')
+                elif isinstance(first, str):
+                    image = first
+            if name and price:
+                products.append({
+                    'name':           name,
+                    'price':          int(price),
+                    'currency':       'JPY',
+                    'formattedPrice': f'¥{int(price):,}',
+                    'url':            f'https://www.gu-global.com/jp/ja/products/{pid}',
+                    'image':          image,
+                    'sku':            pid,
+                })
+        results['JP'] = {
+            'currency': 'JPY', 'products': products,
+            'error': None if products else 'No results',
+            'storeUrl': store_url, 'searchUrl': search_url_,
+        }
+    except Exception as exc:
+        results['JP'] = {
+            'currency': 'JPY', 'products': [], 'error': str(exc),
+            'storeUrl': store_url, 'searchUrl': search_url_,
+        }
+
+    # KR — GU Korea service was discontinued
+    results['KR'] = {
+        'currency': 'KRW', 'products': [],
+        'error': 'GU is not available in Korea',
+        'storeUrl': 'https://www.gu-global.com/',
+        'searchUrl': None,
+    }
 
     return results
 
@@ -442,6 +560,11 @@ STORE_URLS = {
         'JP': 'https://www.uniqlo.com/jp/ja/',
         'KR': 'https://www.uniqlo.com/kr/ko/',
     },
+    'gu': {
+        'TW': 'https://www.gu-global.com/tw/zh_tw/',
+        'JP': 'https://www.gu-global.com/jp/ja/',
+        'KR': 'https://www.gu-global.com/',
+    },
 }
 
 def search_url(brand, country, query):
@@ -476,6 +599,11 @@ def search_url(brand, country, query):
             'TW': f'https://www.uniqlo.com/tw/zh_TW/search.html?description={q}',
             'JP': f'https://www.uniqlo.com/jp/ja/search?q={q}',
             'KR': f'https://www.uniqlo.com/kr/ko/search?q={q}',
+        },
+        'gu': {
+            'TW': f'https://www.gu-global.com/tw/zh_TW/search.html?description={q}',
+            'JP': f'https://www.gu-global.com/jp/ja/search?q={q}',
+            'KR': None,
         },
     }
     return patterns.get(brand, {}).get(country)
@@ -584,12 +712,13 @@ async def _scrape_country(browser, brand, country, currency, query):
             pass
 
         await _dismiss_cookies(page)
+
         await page.wait_for_timeout(4000)
 
         if captured:
             return captured
 
-        # DOM fallback
+        # Generic DOM fallback
         selectors = BRAND_DOM_SELECTORS.get(brand, ['[class*="product-card"]'])
         try:
             dom_items = await page.evaluate(_DOM_EXTRACT_JS, selectors)
@@ -628,6 +757,11 @@ async def _search_single(brand, query):
     if brand == 'uniqlo' and _CFFI:
         country_data = fetch_uniqlo_search(query)
         return {'brand': 'uniqlo', 'query': query, **country_data}
+
+    # Fast path: GU REST APIs (TW POST, JP GET; KR not available)
+    if brand == 'gu' and _CFFI:
+        country_data = fetch_gu_search(query)
+        return {'brand': 'gu', 'query': query, **country_data}
 
     results = {}
     q = quote_plus(query)
@@ -705,7 +839,7 @@ async def _search_single(brand, query):
 async def search_brand(brand, query):
     if brand == 'all':
         all_results = {}
-        for b in ['lv', 'bottega', 'celine', 'uniqlo']:
+        for b in ['lv', 'bottega', 'celine', 'uniqlo', 'gu']:
             try:
                 all_results[b] = await _search_single(b, query)
             except Exception as e:

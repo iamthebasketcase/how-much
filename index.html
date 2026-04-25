@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>多少錢？ — Luxury Price Comparison</title>
+  <title>免稅不是免費</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
@@ -21,9 +21,11 @@
       --text:       #1c1912;
       --muted:      #6e6454;
       --dim:        #9e9282;
+      --font-ui:    var(--font-ui);
+      --font-num:   var(--font-num);
     }
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    body { background: var(--bg); color: var(--text); font-family: 'Inter','Noto Sans TC',sans-serif;
+    body { background: var(--bg); color: var(--text); font-family: var(--font-ui);
            font-weight: 400; -webkit-font-smoothing: antialiased; min-height: 100vh; }
     .serif { font-family: 'Cormorant Garamond', serif; }
 
@@ -32,10 +34,17 @@
       background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
 
     /* ── header ── */
-    header { border-bottom:1px solid var(--border); padding:0 2.5rem; height:60px;
-      display:flex; align-items:center; justify-content:center;
+    header { border-bottom:1px solid var(--border); height:60px;
+      display:flex; align-items:center; overflow:hidden;
       position:sticky; top:0; z-index:50; background:rgba(247,244,238,.94); backdrop-filter:blur(12px); }
-    .logo { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',Arial,sans-serif; font-size:1.1rem; font-weight:700;
+    .marquee-track { display:flex; width:100%; overflow:hidden; }
+    .marquee-inner { display:flex; gap:0; white-space:nowrap; animation:marquee 18s linear infinite; }
+    .marquee-inner span { padding:0 3rem; }
+    @keyframes marquee {
+      0%   { transform:translateX(0); }
+      100% { transform:translateX(-50%); }
+    }
+    .logo { font-family:var(--font-num); font-size:1.1rem; font-weight:700;
              font-style:normal; letter-spacing:0; color:var(--text); }
     .hdr-note { font-size:1.1rem; letter-spacing:.05em; color:var(--dim); }
 
@@ -50,14 +59,17 @@
       font-weight:400; line-height:1.15; letter-spacing:-.01em; color:var(--text); margin:0 auto .7rem;
       width:fit-content; }
     .hero-title em { font-style:italic; color:var(--gold-l); }
-    .hero-sub { color:var(--muted); font-size:1.05rem; line-height:1.7; margin-bottom:2.6rem;
-      font-family:'Helvetica Neue',Helvetica,Arial,sans-serif; letter-spacing:-.01em; font-weight:700; }
+    .hero-sub { color:var(--muted); font-size:1.25rem; line-height:1.7; margin-bottom:2.6rem;
+      font-family:var(--font-num); letter-spacing:-.01em; font-weight:400; font-style:italic; }
 
     /* ── brand pills ── */
-    .pills { display:flex; gap:1rem; flex-wrap:wrap; justify-content:center; margin-bottom:1.8rem; align-items:flex-start; }
+    .pills { display:flex; flex-direction:column; gap:.8rem; align-items:stretch; margin-bottom:1.8rem; max-width:640px; margin-left:auto; margin-right:auto; }
+    .pills-section { border:1px solid var(--border); border-radius:10px; padding:.75rem 1.2rem .9rem; background:rgba(255,252,245,.6); position:relative; }
+    .pills-label { display:inline-block; font-size:.58rem; letter-spacing:.22em; text-transform:uppercase; color:var(--dim); background:var(--bg); padding:0 .45rem; position:absolute; top:-.55rem; left:1rem; line-height:1.1rem; }
+    .pills-row { display:flex; gap:1rem; flex-wrap:wrap; justify-content:flex-start; align-items:flex-start; padding-top:.25rem; }
     .pill-group { display:flex; flex-direction:column; align-items:center; gap:.3rem; }
     .pill { padding:.42rem 1.1rem; border:1.5px solid rgba(154,115,34,.28); background:transparent;
-      color:var(--muted); font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.9rem;
+      color:var(--muted); font-family:var(--font-num); font-size:.9rem;
       letter-spacing:.08em; cursor:pointer; border-radius:2px;
       box-shadow:0 0 0 3px rgba(154,115,34,.04);
       transition:border-color .2s,color .2s,background .2s,box-shadow .2s; }
@@ -70,20 +82,27 @@
       transition:color .2s; }
     .pill-help:hover { color:var(--gold); }
 
+    /* ── trending chips ── */
+    .trend-chip { display:inline-block; padding:.22rem .7rem; margin:.2rem .25rem;
+      border:1px solid var(--border); border-radius:20px; background:transparent;
+      color:var(--muted); font-size:.72rem; letter-spacing:.06em; cursor:pointer;
+      transition:border-color .2s, color .2s, background .2s; }
+    .trend-chip:hover { border-color:var(--gold); color:var(--gold); background:rgba(154,115,34,.05); }
+
     /* ── search bar ── */
-    .search-wrap { display:flex; max-width:540px; margin:0 auto;
+    .search-wrap { display:flex; max-width:640px; margin:0 auto;
       border:1.5px solid rgba(154,115,34,.28); background:#fff;
       transition:border-color .25s, box-shadow .25s;
       box-shadow:0 2px 10px rgba(28,25,18,.07), 0 0 0 4px rgba(154,115,34,.05); }
     .search-wrap:focus-within { border-color:var(--gold);
       box-shadow:0 4px 24px rgba(154,115,34,.18), 0 0 0 4px rgba(154,115,34,.09); }
     #q { flex:1; background:transparent; border:none; outline:none; color:var(--text);
-      font-family:'Inter','Noto Sans TC',sans-serif; font-weight:400; font-size:.88rem;
+      font-family:var(--font-ui); font-weight:400; font-size:.88rem;
       padding:.9rem 1.3rem; caret-color:var(--gold); }
     #q::placeholder { color:var(--dim); }
     #search-btn { padding:.9rem 1.7rem; background:var(--gold); border:none;
       color:#faf7f0;
-      font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.88rem;
+      font-family:var(--font-num); font-size:.88rem;
       font-weight:700; letter-spacing:.14em;
       cursor:pointer; white-space:nowrap;
       transition:background .2s, box-shadow .2s, transform .15s; }
@@ -110,7 +129,7 @@
     .spinner { width:32px; height:32px; border:1px solid var(--border); border-top-color:var(--gold);
       border-radius:50%; animation:spin .8s linear infinite; }
     @keyframes spin { to { transform:rotate(360deg); } }
-    .load-text { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1rem; color:var(--muted); letter-spacing:.05em; }
+    .load-text { font-family:var(--font-num); font-size:1rem; color:var(--muted); letter-spacing:.05em; }
 
     /* ── error banner ── */
     #err { display:none; margin:2.5rem auto; max-width:420px; text-align:center; padding:0 1rem; }
@@ -123,7 +142,7 @@
     .brand-block { margin-bottom:3rem; }
     .brand-header { display:flex; align-items:baseline; gap:.8rem; margin-bottom:1.5rem;
       padding-bottom:.8rem; border-bottom:1px solid var(--border); }
-    .brand-name { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.45rem; letter-spacing:.06em; }
+    .brand-name { font-family:var(--font-num); font-size:1.45rem; letter-spacing:.06em; }
     .brand-query { font-size:.72rem; letter-spacing:.1em; text-transform:uppercase; color:var(--gold-d); }
     .brand-count { margin-left:auto; font-size:.7rem; color:var(--dim); }
 
@@ -151,7 +170,7 @@
     .prod-info { flex:1; min-width:0; }
     .prod-name { font-size:.77rem; line-height:1.4; color:var(--text); margin-bottom:.3rem;
       display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-    .prod-price { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.05rem; font-weight:500; color:var(--gold); }
+    .prod-price { font-family:var(--font-num); font-size:1.05rem; font-weight:500; color:var(--gold); }
     .prod-usd { font-size:.68rem; color:var(--dim); margin-top:.1rem; }
     .prod-link { display:inline-block; margin-top:.3rem; font-size:.62rem; letter-spacing:.1em;
       text-transform:uppercase; color:var(--dim); text-decoration:none; transition:color .15s; }
@@ -199,10 +218,13 @@
     .cmp-table tr:hover td { background:var(--s2); }
     .td-product-inner { display:flex; align-items:flex-start; gap:.7rem; }
     .price-cell { color:var(--muted); height:100%; }
-    .price-main { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif;
+    .price-main { font-family:var(--font-num);
       font-size:.95rem; font-weight:500; color:var(--text); line-height:1.3; }
+    .price-cell.best { background:rgba(154,115,34,.07); outline:1.5px solid rgba(154,115,34,.35); outline-offset:-1px; }
     .price-cell.best .price-main { color:var(--gold); }
     .price-usd { font-size:.68rem; color:var(--dim); display:block; margin-top:.15rem; }
+    .price-conv { color:var(--gold); }
+    .price-cell.best .price-conv { text-decoration:underline; text-underline-offset:2px; font-weight:600; }
     .price-cell-inner { display:flex; flex-direction:column; height:100%; }
     .price-cell-inner .prod-link { margin-top:auto; padding-top:.5rem; }
     .tax-free { font-size:.7rem; color:var(--gold-d); display:block; margin-top:.3rem; }
@@ -215,14 +237,14 @@
     .modal-box { background:#fff; border:1px solid var(--border);
       padding:2rem; max-width:420px; width:100%;
       box-shadow:0 8px 40px rgba(20,18,12,.18); }
-    .modal-title { font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:1.2rem;
+    .modal-title { font-family:var(--font-num); font-size:1.2rem;
       letter-spacing:.04em; margin-bottom:1.5rem; color:var(--text); }
     .modal-title span { color:var(--gold); }
     .form-group { margin-bottom:1rem; }
     .form-label { display:block; font-size:.65rem; letter-spacing:.14em; text-transform:uppercase;
       color:var(--muted); margin-bottom:.45rem; }
     .form-input { width:100%; background:var(--s1); border:1px solid var(--border); color:var(--text);
-      font-family:'Inter',sans-serif; font-size:.85rem; font-weight:400;
+      font-family:var(--font-ui); font-size:.85rem; font-weight:400;
       padding:.65rem .9rem; outline:none; transition:border-color .2s; caret-color:var(--gold); }
     .form-input:focus { border-color:var(--gold); }
     .form-row { display:flex; gap:.6rem; }
@@ -232,13 +254,15 @@
       color:var(--muted); font-size:.8rem; letter-spacing:.08em; cursor:pointer; transition:color .2s; }
     .btn-cancel:hover { color:var(--text); }
     .btn-save { padding:.6rem 1.4rem; border:1px solid var(--gold); background:rgba(154,115,34,.07);
-      color:var(--gold); font-family:'Helvetica Neue',Helvetica,'Noto Sans TC',sans-serif; font-size:.9rem;
+      color:var(--gold); font-family:var(--font-num); font-size:.9rem;
       letter-spacing:.08em; cursor:pointer; transition:background .2s,color .2s; }
     .btn-save:hover { background:rgba(154,115,34,.14); color:var(--gold-l); }
 
     /* ── help modal ── */
-    .help-img-wrap { position:relative; width:100%; margin-bottom:1rem; border:1px solid var(--border); background:var(--s1); overflow:hidden; }
+    .help-body { display:flex; gap:1.5rem; align-items:flex-start; }
+    .help-img-wrap { flex:0 0 auto; width:220px; border:1px solid var(--border); background:var(--s1); overflow:hidden; }
     .help-img-wrap img { width:100%; display:block; }
+    .help-text { flex:1; min-width:0; }
     .help-hint { font-size:.82rem; color:var(--muted); line-height:1.75; margin-bottom:1.5rem; }
     .help-tag { display:inline-block; padding:.2rem .55rem; background:rgba(154,115,34,.08);
       border:1px solid var(--gold-d); font-size:.62rem; letter-spacing:.1em;
@@ -258,7 +282,14 @@
 
 <!-- ── Header ── -->
 <header>
-  <div class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</div>
+  <div class="marquee-track">
+    <div class="marquee-inner">
+      <span class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</span>
+      <span class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</span>
+      <span class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</span>
+      <span class="logo">🇹🇼 多少錢・🇯🇵 いくらですか・🇰🇷 얼마에요</span>
+    </div>
+  </div>
 </header>
 
 <!-- ── Hero / Search ── -->
@@ -267,29 +298,49 @@
   <p class="hero-sub">Tax Free, Not FREE</p>
 
   <div class="pills" id="pills">
-    <div class="pill-group">
-      <button class="pill active" data-brand="bottega">Bottega Veneta</button>
-      <button class="pill-help" onclick="showHelp('bottega')">🔍 查詢產品編號</button>
+    <div class="pills-section">
+      <div class="pills-label">必買</div>
+      <div class="pills-row">
+        <div class="pill-group">
+          <button class="pill" data-brand="gu">GU</button>
+          <button class="pill-help" onclick="showHelp('gu')">🔍 網路查詢編號</button>
+          <button class="pill-help" onclick="showHelp('gu_tag')">🔍 吊牌查詢編號</button>
+        </div>
+        <div class="pill-group">
+          <button class="pill active" data-brand="uniqlo">UNIQLO</button>
+          <button class="pill-help" onclick="showHelp('uniqlo')">🔍 網路查詢編號</button>
+          <button class="pill-help" onclick="showHelp('uniqlo_tag')">🔍 吊牌查詢編號</button>
+        </div>
+      </div>
     </div>
-    <div class="pill-group">
-      <button class="pill" data-brand="celine">Celine</button>
-      <button class="pill-help" onclick="showHelp('celine')">🔍 查詢產品編號</button>
-    </div>
-    <div class="pill-group">
-      <button class="pill" data-brand="lv">Louis Vuitton</button>
-      <button class="pill-help" onclick="showHelp('lv')">🔍 查詢產品編號</button>
-    </div>
-    <div class="pill-group">
-      <button class="pill" data-brand="uniqlo">Uniqlo</button>
-      <button class="pill-help" onclick="showHelp('uniqlo')">🔍 查詢商品名稱</button>
+    <div class="pills-section">
+      <div class="pills-label">必逛</div>
+      <div class="pills-row">
+        <div class="pill-group">
+          <button class="pill" data-brand="bottega">Bottega Veneta</button>
+          <button class="pill-help" onclick="showHelp('bottega')">🔍 查詢商品編號</button>
+        </div>
+        <div class="pill-group">
+          <button class="pill" data-brand="celine">Celine</button>
+          <button class="pill-help" onclick="showHelp('celine')">🔍 查詢商品編號</button>
+        </div>
+        <div class="pill-group">
+          <button class="pill" data-brand="lv">Louis Vuitton</button>
+          <button class="pill-help" onclick="showHelp('lv')">🔍 查詢商品編號</button>
+        </div>
+      </div>
     </div>
   </div>
 
   <div class="search-wrap">
     <input id="q" type="text"
-           placeholder="輸入產品編號 / 商品編號"
+           placeholder="輸入商品編號"
            autocomplete="off" spellcheck="false">
-    <button id="search-btn" onclick="handleSearch()">跨境查價 →</button>
+    <button id="search-btn" onclick="handleSearch()">一鍵查價 →</button>
+  </div>
+  <div id="trending" style="display:none; margin-top:.9rem; text-align:center;">
+    <span style="font-size:.6rem; letter-spacing:.2em; text-transform:uppercase; color:var(--dim); margin-right:.5rem;">大家都在搜 👉🏼</span>
+    <span id="trending-chips"></span>
   </div>
 </section>
 
@@ -352,10 +403,14 @@
 <!-- ── Help Modal ── -->
 <div class="modal-overlay" id="help-modal" onclick="if(event.target===this)closeHelp()">
   <div class="modal-box" style="max-width:660px;width:100%">
-    <p class="modal-title" id="help-brand-title"></p>
-    <span class="help-tag" id="help-tag"></span>
-    <div class="help-img-wrap" id="help-img-wrap"></div>
-    <p class="help-hint" id="help-hint"></p>
+    <div class="help-body">
+      <div class="help-img-wrap" id="help-img-wrap"></div>
+      <div class="help-text">
+        <p class="modal-title" id="help-brand-title"></p>
+        <span class="help-tag" id="help-tag"></span>
+        <p class="help-hint" id="help-hint" style="margin-top:.9rem"></p>
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeHelp()">關閉</button>
     </div>
@@ -364,7 +419,7 @@
 
 <script>
 // ─── State ───────────────────────────────────────────────────────────────────
-let activeBrand      = 'bottega';
+let activeBrand      = 'uniqlo';
 let displayCurrency  = 'TWD';
 let exchangeRates    = null;
 let lastSearchData   = null;
@@ -374,7 +429,7 @@ let modal_country    = '';
 let modal_query      = '';
 let modal_currency   = '';
 
-const BRAND_LABELS = { lv:'Louis Vuitton', bottega:'Bottega Veneta', celine:'Celine', uniqlo:'Uniqlo' };
+const BRAND_LABELS = { lv:'Louis Vuitton', bottega:'Bottega Veneta', celine:'Celine', uniqlo:'Uniqlo', gu:'GU' };
 const COUNTRY_FLAGS = { TW:'🇹🇼', JP:'🇯🇵', KR:'🇰🇷' };
 const COUNTRY_NAMES = { TW:'Taiwan', JP:'Japan', KR:'Korea' };
 const COUNTRIES     = ['TW','JP','KR'];
@@ -382,28 +437,46 @@ const COUNTRIES     = ['TW','JP','KR'];
 // ─── Brand help data ─────────────────────────────────────────────────────────
 const BRAND_HELP = {
   lv: {
-    title: 'Louis Vuitton — 商品編號在哪裡？',
+    title: '',
     tag: '格式：M13559（1 個英文字母 ＋ 5 位數字）',
     hint: '進入 Louis Vuitton 商品頁面，商品名稱上方即可看到商品編號，格式通常為一個大寫英文字母加五個數字，例如：M13559。',
     img: 'brand_assets/help_lv.png',
   },
   bottega: {
-    title: 'Bottega Veneta — 商品編號在哪裡？',
+    title: '',
     tag: '格式：786008VCPP12264',
-    hint: '進入 Bottega Veneta 商品頁面，點擊下方「Product details」展開詳細資訊，最後一行即可找到「Product code」（產品編號），例如：786008VCPP12264；亦可直接輸入商品名稱搜尋，例如：Andiamo、Jodie。',
+    hint: '進入 Bottega Veneta 商品頁面，點擊下方「Product details」展開詳細資訊，最後一行即可找到「Product code」（產品編號），例如：786008VCPP12264。',
     img: 'brand_assets/help_bv.png',
   },
   celine: {
-    title: 'Celine — 商品編號在哪裡？',
+    title: '',
     tag: '格式：4M0963D39.GJQ4',
-    hint: '進入 Celine 商品頁面，點擊右側「詳述」區塊展開，在最下方即可找到「參考編號」，例如：4M0963D39.GJQ4；亦可直接輸入商品名稱搜尋，例如：Triomphe、Classique。',
+    hint: '進入 Celine 商品頁面，點擊右側「詳述」區塊展開，在最下方即可找到「參考編號」，例如：4M0963D39.GJQ4。',
     img: 'brand_assets/help_celine.png',
   },
   uniqlo: {
-    title: 'Uniqlo — 如何搜尋？',
-    tag: '輸入商品名稱，例如：fleece、HEATTECH',
-    hint: '直接輸入商品名稱（中文或英文皆可），例如：刷毛外套、fleece、HEATTECH，即可比較台灣、日本、韓國三地的 Uniqlo 售價。',
-    img: '',
+    title: '',
+    tag: '格式：六碼數字，例如：487277',
+    hint: '進入 UNIQLO 商品頁面，商品名稱上方即可看到商品編號，格式通常為六碼的數字，例如：487277。',
+    img: 'brand_assets/help_uniqlo.png',
+  },
+  uniqlo_tag: {
+    title: 'UNIQLO — 吊牌查詢編號',
+    tag: '格式：六碼數字，例如：422986',
+    hint: '翻開 UNIQLO 商品吊牌，條碼上方即為六碼商品編號，例如：422986。',
+    img: 'brand_assets/help_uniqlo_2.jpeg',
+  },
+  gu: {
+    title: '',
+    tag: '格式：六碼數字，例如：360321',
+    hint: '進入 GU 商品頁面，商品名稱上方即可看到商品編號，格式通常為六碼的數字，例如：360321；請留意，GU 已於 2020 年時退出韓國實體市場。',
+    img: 'brand_assets/help_gu.png',
+  },
+  gu_tag: {
+    title: 'GU — 吊牌查詢編號',
+    tag: '格式：六碼數字，例如：349741',
+    hint: '翻開 GU 商品吊牌，條碼上方即為六碼商品編號，例如：349741。',
+    img: 'brand_assets/help_gu_2.png',
   },
 };
 
@@ -413,7 +486,11 @@ function showHelp(brand) {
   document.getElementById('help-brand-title').textContent = h.title;
   document.getElementById('help-tag').textContent = h.tag;
   document.getElementById('help-hint').textContent = h.hint;
+  const isTag = brand.endsWith('_tag');
+  const body = document.querySelector('#help-modal .help-body');
+  body.style.flexDirection = isTag ? 'row' : 'column';
   const wrap = document.getElementById('help-img-wrap');
+  wrap.style.width = isTag ? '220px' : '100%';
   if (!h.img) {
     wrap.innerHTML = '<p style="min-height:80px;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:.75rem;letter-spacing:.1em;text-transform:uppercase">直接輸入商品名稱即可</p>';
   } else {
@@ -435,6 +512,8 @@ function closeHelp() {
 // ─── Init ────────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   loadRates();
+  loadTrending();
+
   document.getElementById('pills').addEventListener('click', e => {
     const b = e.target.closest('.pill');
     if (!b) return;
@@ -446,6 +525,24 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'Enter') handleSearch();
   });
 });
+
+async function loadTrending() {
+  try {
+    const data = await fetch('/api/analytics').then(r => r.json());
+    const counts = {};
+    for (const e of (data.events || [])) {
+      const key = e.query;
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    const top3 = Object.entries(counts).sort((a,b) => b[1]-a[1]).slice(0,3).map(([q]) => q);
+    if (!top3.length) return;
+    const chips = top3.map(q =>
+      `<button class="trend-chip" onclick="document.getElementById('q').value='${q}';handleSearch()">${q}</button>`
+    ).join('');
+    document.getElementById('trending-chips').innerHTML = chips;
+    document.getElementById('trending').style.display = 'block';
+  } catch {}
+}
 
 async function loadRates() {
   try {
@@ -459,9 +556,20 @@ async function loadRates() {
 async function handleSearch() {
   const query = document.getElementById('q').value.trim();
   if (!query) { document.getElementById('q').focus(); return; }
+  if (!/\d/.test(query)) {
+    showError('請輸入產品編號（需包含數字），例如：M13559、786008VCPP12264、450888');
+    return;
+  }
 
   setLoading(true);
   clearResults();
+
+  // Fire-and-forget analytics
+  fetch('/api/analytics', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ brand: activeBrand, query }),
+  }).catch(() => {});
 
   // Run scrape + manual price fetch in parallel
   const [scrapeResult, manualPrices] = await Promise.allSettled([
@@ -565,7 +673,7 @@ function renderBrandBlock(container, brand, scrapeData, query) {
       <th class="th-product">Product</th>`;
 
     for (const c of COUNTRIES) {
-      const isBest = globalMinUSD && countryMinUSD[c] && Math.abs(countryMinUSD[c] - globalMinUSD) < 1;
+      const isBest = globalMinUSD && countryMinUSD[c] && Math.abs(countryMinUSD[c] - globalMinUSD) < 0.01;
       html += `<th class="${isBest ? 'th-best' : ''}">${COUNTRY_FLAGS[c]}&nbsp;${COUNTRY_NAMES[c]}${isBest ? '&ensp;<span class="best-badge" style="margin:0">最划！</span>' : ''}</th>`;
     }
 
@@ -590,9 +698,13 @@ function renderBrandBlock(container, brand, scrapeData, query) {
 
       for (const c of COUNTRIES) {
         const p = byCountry[c][i];
-        if (!p) { html += `<td class="price-cell"><span style="color:var(--dim)">—</span></td>`; continue; }
+        if (!p) {
+          const fallbackUrl = scrapeData?.[c]?.searchUrl || scrapeData?.[c]?.storeUrl;
+          html += `<td class="price-cell"><span style="color:var(--dim)">—</span>${fallbackUrl ? `<br><a class="prod-link" href="${esc(fallbackUrl)}" target="_blank" rel="noopener" style="font-size:.7rem">手動查詢 ↗</a>` : ''}</td>`;
+          continue;
+        }
         const usd    = toUSD(p.price, p.currency);
-        const isBest = minRowUSD && usd && Math.abs(usd - minRowUSD) < 1;
+        const isBest = minRowUSD && usd && Math.abs(usd - minRowUSD) < 0.01;
         const disp   = toDisplay(p.price, p.currency);
         const TAX = { JP: 0.10, KR: 0.10 };
         const taxRate = TAX[c];
@@ -601,10 +713,10 @@ function renderBrandBlock(container, brand, scrapeData, query) {
           const sym = { TWD:'NT$', JPY:'¥', KRW:'₩', USD:'$' }[p.currency] || '';
           const tfFmt = sym + tfPrice.toLocaleString();
           const tfDisp = toDisplay(tfPrice, p.currency);
-          const tfConv = tfDisp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ ${tfDisp} ${displayCurrency}</span>` : '';
+          const tfConv = tfDisp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ <span class="price-conv">${tfDisp}</span> ${displayCurrency}</span>` : '';
           return `<span class="tax-free"><span class="tax-free-label">未稅價</span> ${tfFmt}${tfConv}</span>`;
         })() : '';
-        const dispInline = disp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ ${disp} ${displayCurrency}</span>` : '';
+        const dispInline = disp && displayCurrency !== p.currency ? ` <span class="price-usd" style="display:inline">≈ <span class="price-conv">${disp}</span> ${displayCurrency}</span>` : '';
         html += `<td class="price-cell${isBest ? ' best' : ''}">
           <div class="price-cell-inner">
             <div class="price-main">${esc(p.formattedPrice)}${dispInline}</div>
@@ -620,7 +732,7 @@ function renderBrandBlock(container, brand, scrapeData, query) {
   } else {
     html += `<div class="col-unavail">
       <div class="unavail-icon">◌</div>
-      <div class="unavail-msg">No results found. Visit official stores to check prices.</div>
+      <div class="unavail-msg" style="font-weight:700">查不到此編號，請自行至官方網站查詢</div>
       <div style="display:flex;gap:.8rem;justify-content:center;flex-wrap:wrap;margin-top:.8rem">
         ${COUNTRIES.map(c => {
           const url = scrapeData?.[c]?.searchUrl || scrapeData?.[c]?.storeUrl;
@@ -668,11 +780,11 @@ function buildCompTable(allPrices) {
       const p = row.prices[c];
       if (!p) { html += `<td class="price-cell" style="color:var(--dim)">—</td>`; continue; }
       const usd  = toUSD(p.price, p.cur);
-      const best = minUSD && usd && Math.abs(usd - minUSD) < 1;
+      const best = minUSD && usd && Math.abs(usd - minUSD) < 0.01;
       const disp = toDisplay(p.price, p.cur);
       html += `<td class="price-cell${best?' best':''}">
         ${esc(p.fmt)}
-        ${disp && displayCurrency !== p.cur ? `<span class="price-usd">≈ ${disp} ${displayCurrency}</span>` : ''}
+        ${disp && displayCurrency !== p.cur ? `<span class="price-usd">≈ <span class="price-conv">${disp}</span> ${displayCurrency}</span>` : ''}
         ${best ? ' ✦' : ''}
       </td>`;
     }
